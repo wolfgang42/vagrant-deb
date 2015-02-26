@@ -14,8 +14,7 @@
 	You'll need to add the repository to your APT sources:
 	<pre>
 	sudo bash -c 'echo deb http://vagrant-deb.linestarve.com/ any main > /etc/apt/sources.list.d/wolfgang42-vagrant.list'
-	gpg --keyserver pgp.mit.edu --recv-keys ${GPG_KEY}
-	gpg -a --export ${GPG_KEY} | sudo apt-key add --
+	sudo apt-key adv --keyserver pgp.mit.edu --recv-key ${GPG_KEY}
 	sudo apt-get update
 	</pre>
 	Now install as usual:
