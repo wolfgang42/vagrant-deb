@@ -11,7 +11,7 @@ VERSION=$(wget -q -O - https://bintray.com/api/v1/packages/mitchellh/vagrant/vag
 # The choice of aptly was entirely arbitrary, but works fine.
 aptly="aptly -config=$BASEDIR/aptly.conf"
 
-if ! $aptly snapshot list | grep vagrant-$VERSION; then
+if ! $aptly snapshot list | grep vagrant-$VERSION > /dev/null; then
 	mkdir /tmp/vagrant-$VERSION
 	cd /tmp/vagrant-$VERSION
 	
