@@ -2,6 +2,7 @@
 set -u
 set -e
 
+# Dependencies: jq git aptly realpath wget gettext-base
 # Setup: aptly repo create -config=/path/to/aptly.conf --distribution=any --component=main vagrant-deb
 GPG_KEY=2099F7A4
 
