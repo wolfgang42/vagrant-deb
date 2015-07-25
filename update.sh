@@ -25,7 +25,7 @@ if ! $aptly snapshot list | grep vagrant-$VERSION > /dev/null; then
 	$aptly repo add vagrant-deb .
 	$aptly snapshot create vagrant-$VERSION from repo vagrant-deb
 
-	$aptly publish snapshot -gpg-key=$GPG_KEY vagrant-$VERSION
+	$aptly publish switch any vagrant-$VERSION
 	
 	# Clean up after ourselves
 	cd
