@@ -18,7 +18,7 @@ if ! $aptly snapshot list | grep vagrant-$VERSION > /dev/null; then
 	
 	# Download the packages
 	for package in vagrant_${VERSION}_{x86_64,i686}.deb; do
-		wget https://dl.bintray.com/mitchellh/vagrant/$package
+		wget -nv https://dl.bintray.com/mitchellh/vagrant/$package
 	done
 	
 	# Add the packages to aptly
