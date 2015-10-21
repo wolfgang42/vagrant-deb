@@ -4,7 +4,7 @@ set -e
 
 # Dependencies: jq git aptly realpath wget gettext-base
 # Setup: aptly repo create -config=/path/to/aptly.conf --distribution=any --component=main vagrant-deb
-GPG_KEY=2099F7A4
+GPG_KEY=AD319E0F7CFFA38B4D9F6E55CE3F3DE92099F7A4
 
 BASEDIR=$(dirname $(realpath $0))
 VERSION=$(wget -q -O - https://bintray.com/api/v1/packages/mitchellh/vagrant/vagrant/ | jq -r .latest_version)
