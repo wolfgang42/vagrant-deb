@@ -7,7 +7,8 @@ set -e
 GPG_KEY=AD319E0F7CFFA38B4D9F6E55CE3F3DE92099F7A4
 
 BASEDIR=$(dirname $(realpath $0))
-VERSION=$(wget -q -O - https://bintray.com/api/v1/packages/mitchellh/vagrant/vagrant/ | jq -r .latest_version)
+JSON=$(curl -s https://releases.hashicorp.com/vagrant/index.json)
+VERSION=$(echo $JSON|jq -r '.versions | keys' | jq -r max)
 
 # The choice of aptly was entirely arbitrary, but works fine.
 aptly="aptly -config=$BASEDIR/aptly.conf"
@@ -17,8 +18,9 @@ if ! $aptly snapshot list | grep vagrant-$VERSION > /dev/null; then
 	cd /tmp/vagrant-$VERSION
 	
 	# Download the packages
-	for package in vagrant_${VERSION}_{x86_64,i686}.deb; do
-		wget -nv https://dl.bintray.com/mitchellh/vagrant/$package
+	for ARCH in x86_64 i686; do
+		URL=$(echo $JSON | jq -r ".versions" | jq -r ".[\"$VERSION\"]" | jq -r ".builds | .[] | select(.arch==\"$ARCH\") | select(.os==\"debian\") | .url")
+		wget -nv $URL
 	done
 	
 	# Add the packages to aptly
