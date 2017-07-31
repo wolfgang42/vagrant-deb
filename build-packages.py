@@ -32,11 +32,7 @@ for program in ['vagrant']:
 		release = releases[program]['versions'][version]
 		build = get_build(release, arch)
 		if build:
-			print "Package:", program
-			print "Version:", version
-			print "Architecture:", arch
-			print "Maintainer: HashiCorp <support@hashicorp.com>"
-			print "Description: no description given"
+			print releaseinfo.build_control_entry(build, 'control')
 			poolname = "pool/any/main/"+program[0]+"/"+program+"/"+program+"_"+version+"_"+arch+".deb"
 			redirects.write('rewrite ^/'+poolname+' '+build['url']+' permanent;\n')
 			print "Filename:", poolname

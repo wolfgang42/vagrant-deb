@@ -4,7 +4,7 @@ set -e
 
 BASEDIR=$(dirname $(realpath $0))
 
-mkdir -p cache/{shasums,size}/
+mkdir -p cache/{control,shasums,size}/
 mkdir -p public_html/dists/any/main/binary-{i386,amd64}/
 curl -s https://releases.hashicorp.com/index.json > cache/releases.json
 

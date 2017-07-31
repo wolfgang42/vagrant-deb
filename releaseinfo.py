@@ -1,6 +1,7 @@
 import os.path
 import requests
 import subprocess
+import tarfile
 
 def _cache_result(cachename):
 	def decorator(getresult):
@@ -20,6 +21,49 @@ def build_size(build):
 	r = requests.head(build['url'])
 	r.raise_for_status()
 	return r.headers['Content-Length']
+
+@_cache_result(lambda build: 'control/'+build['filename']+'.control.tar.gz')
+def build_control_file(build):
+	# Get the `control.tar.gz` file from the package.
+	# This is done by (very carefully!) downloading the file's header
+	# (which is in Unix `ar` format) and parsing it to find out
+	# where the control.tar.gz file is,
+	# and then sending a separate request with the correct range
+	# to obtain only the control.tar.gz file from the package.
+	# The best way to understand this code (should you need to)
+	# is probably to get a hexdump of a package, and read the header yourself.
+	
+	# First, obtain the relevant bits of the header, which happen to be
+	# the first 132 bytes.
+	rh = requests.get(build['url'], headers={'Range': 'bytes=0-131'})
+	rh.raise_for_status()
+	# Then, sanity check and parse the response
+	head = rh.content
+	assert head[0:8] == '!<arch>\n' # AR file header
+	## First file ##
+	assert head[8:24] == 'debian-binary/  ' # File name
+	# head[24:36] (Skip timestamp)
+	assert head[36:56] == '0     0     100644  ' # Owner, group, mode
+	assert head[56:68] == '4         `\n' # Length: 4 bytes
+	assert head[68:72] == '2.0\n' # Contents of file
+	## Second file ##
+	assert head[72:88] == 'control.tar.gz/ ' # File name
+	# head[88:100] (Skip timestamp)
+	assert head[100:120] == '0     0     100644  ' # Owner, group, mode
+	control_length = int(head[120:130]) # This is the bit we need
+	assert head[130:132] == '`\n' # End of header record
+	
+	# Finally, send a request for the control.tar.gz file,
+	# which begins immediately after the header we just read
+	# and continues for control_length more bytes.
+	rc = requests.get(build['url'], headers={'Range': 'bytes=132-'+str(control_length+132)})
+	rc.raise_for_status()
+	return rc.content
+
+def build_control_entry(build, entry):
+	build_control_file(build)
+	with tarfile.open('cache/control/'+build['filename']+'.control.tar.gz', 'r:gz') as tf:
+		return tf.extractfile('./'+entry).read()
 
 @_cache_result(lambda release: 'shasums/'+release['shasums'])
 def release_shasums(release):
