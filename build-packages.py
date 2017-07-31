@@ -31,30 +31,37 @@ def get_build(release, arch):
 		if build['os'] == 'debian' and build['arch'] in ARCH_SYNONYMS[arch]:
 			return build
 
+@cache_result(lambda build: 'size/'+build['filename'])
+def get_size(build):
+	r = requests.head(build['url'])
+	r.raise_for_status()
+	return r.headers['Content-Length']
+
+@cache_result(lambda release: 'shasums/'+release['shasums'])
 def get_shasums(release):
-	cachefile = 'cache/shasums/'+release['shasums']
-	# Download shasums (if they don't exist)
-	if not os.path.exists(cachefile):
-		r = requests.get(
-			'https://releases.hashicorp.com/' +
-			release['name'] + '/' +
-			release['version'] + '/' +
-			release['shasums']
-		)
-		r.raise_for_status()
-		with open(cachefile, 'w') as f:
-			f.write(r.text)
-	# Download shasums signature (if it doesn't exist)
-	if not os.path.exists(cachefile+'.sig'):
-		r = requests.get(
-			'https://releases.hashicorp.com/' +
-			release['name'] + '/' +
-			release['version'] + '/' +
-			release['shasums_signature']
-		)
-		r.raise_for_status()
-		with open(cachefile+'.sig', 'w') as f:
-			f.write(r.content)
+	r = requests.get(
+		'https://releases.hashicorp.com/' +
+		release['name'] + '/' +
+		release['version'] + '/' +
+		release['shasums']
+	)
+	r.raise_for_status()
+	return r.text
+
+@cache_result(lambda release: 'shasums/'+release['shasums']+'.sig')
+def get_shasums_sig(release):
+	r = requests.get(
+		'https://releases.hashicorp.com/' +
+		release['name'] + '/' +
+		release['version'] + '/' +
+		release['shasums_signature']
+	)
+	r.raise_for_status()
+	return r.content
+
+def check_shasums_sig(release):
+	get_shasums(release)
+	get_shasums_sig(release)
 	# Verify shasums signature
 	# https://github.com/micahflee/torbrowser-launcher/issues/147
 	p = subprocess.Popen([
@@ -67,7 +74,7 @@ def get_shasums(release):
 		# (as per above, there's only one anyway)
 		'--trust-model', 'always',
 		# Verify the shasums file using its signature
-		'--verify', cachefile+'.sig',
+		'--verify', 'cache/shasums/'+release['shasums']+'.sig',
 	], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	p.wait()
 	output = p.stderr.read()
@@ -77,19 +84,15 @@ def get_shasums(release):
 		('VALIDSIG 91A6E7F85D05C65630BEF18951852D87348FFC4C' not in output)
 	):
 		raise Exception('Bad signature for '+release['shasums'])
-	# Finally, return the result
-	ret = {}
-	with open(cachefile) as f:
-		for line in f:
-			(sha, filename) = line.strip().split('  ')
-			ret[filename] = sha
-	return ret
 
-@cache_result(lambda build: 'size/'+build['filename'])
-def get_size(build):
-	r = requests.head(build['url'])
-	r.raise_for_status()
-	return r.headers['Content-Length']
+def shasums(release):
+	check_shasums_sig(release)
+	ret = {}
+	for line in get_shasums(release).split('\n'):
+		if line == '': continue
+		(sha, filename) = line.split('  ')
+		ret[filename] = sha
+	return ret
 
 arch=sys.argv[1]
 redirects = open('public_html/redirects-'+arch+'.conf', 'w')
@@ -106,6 +109,6 @@ for program in ['vagrant']:
 			poolname = "pool/any/main/"+program[0]+"/"+program+"/"+program+"_"+version+"_"+arch+".deb"
 			redirects.write('rewrite ^/'+poolname+' '+build['url']+' permanent;\n')
 			print "Filename:", poolname
-			print "SHA256:", get_shasums(release)[build['filename']]
+			print "SHA256:", shasums(release)[build['filename']]
 			print "Size:", get_size(build)
 			print
