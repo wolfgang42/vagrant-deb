@@ -13,6 +13,19 @@ ARCH_SYNONYMS = {
 	'amd64': ['amd64', 'x86_64'],
 }
 
+def cache_result(cachename):
+	def decorator(getresult):
+		def wrapper(*args):
+			cachefile = 'cache/' + cachename(*args)
+			if not os.path.exists(cachefile):
+				result = getresult(*args)
+				with open(cachefile, 'w') as f:
+					f.write(result)
+			with open(cachefile) as f:
+				return f.read()
+		return wrapper
+	return decorator
+
 def get_build(release, arch):
 	for build in release['builds']:
 		if build['os'] == 'debian' and build['arch'] in ARCH_SYNONYMS[arch]:
@@ -72,16 +85,11 @@ def get_shasums(release):
 			ret[filename] = sha
 	return ret
 
+@cache_result(lambda build: 'size/'+build['filename'])
 def get_size(build):
-	cachefile = 'cache/size/'+build['filename']
-	if not os.path.exists(cachefile):
-		r = requests.head(build['url'])
-		r.raise_for_status()
-		with open(cachefile, 'w') as f:
-			f.write(r.headers['Content-Length'])
-	with open(cachefile) as f:
-		return f.read()
-
+	r = requests.head(build['url'])
+	r.raise_for_status()
+	return r.headers['Content-Length']
 
 arch=sys.argv[1]
 redirects = open('public_html/redirects-'+arch+'.conf', 'w')
