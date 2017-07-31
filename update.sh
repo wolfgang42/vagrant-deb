@@ -1,42 +1,50 @@
-#!/bin/sh
+#!/bin/bash
 set -u
 set -e
 
-# Dependencies: jq git aptly realpath wget gettext-base
-# Setup: aptly repo create -config=/path/to/aptly.conf --distribution=any --component=main vagrant-deb
-GPG_KEY=AD319E0F7CFFA38B4D9F6E55CE3F3DE92099F7A4
-
 BASEDIR=$(dirname $(realpath $0))
-JSON=$(curl -s https://releases.hashicorp.com/vagrant/index.json)
-VERSION=$(echo $JSON|jq -r '.versions | keys' | jq -r max)
 
-# The choice of aptly was entirely arbitrary, but works fine.
-aptly="aptly -config=$BASEDIR/aptly.conf"
+mkdir -p cache/{shasums,size}/
+mkdir -p public_html/dists/any/main/binary-{i386,amd64}/
+curl -s https://releases.hashicorp.com/index.json > cache/releases.json
 
-if ! $aptly snapshot list | grep vagrant-$VERSION > /dev/null; then
-	mkdir /tmp/vagrant-$VERSION
-	cd /tmp/vagrant-$VERSION
-	
-	# Download the packages
-	for ARCH in x86_64 i686; do
-		URL=$(echo $JSON | jq -r ".versions" | jq -r ".[\"$VERSION\"]" | jq -r ".builds | .[] | select(.arch==\"$ARCH\") | select(.os==\"debian\") | .url")
-		wget -nv $URL
-	done
-	
-	# Add the packages to aptly
-	$aptly repo add vagrant-deb .
-	$aptly snapshot create vagrant-$VERSION from repo vagrant-deb
+for arch in i386 amd64; do
+	$BASEDIR/build-packages.py $arch > public_html/dists/any/main/binary-$arch/Packages.new
+	pushd public_html/dists/any/main/binary-$arch/ > /dev/null
+	if ! cmp -s Packages Packages.new; then
+		echo "Updated Packages for $arch"
+		mv Packages.new Packages
+		gzip -kf Packages
+		bzip2 -kf Packages
+	fi
+	if [ ! -e Release ]; then
+		echo "Created Release for $arch"
+		echo 'Archive: any' >> Release
+		echo 'Component: main' >> Release
+		echo "Architecture: $arch" >> Release
+	fi
+	popd > /dev/null
+done
 
-	$aptly publish switch any vagrant-$VERSION
-	
-	# Clean up after ourselves
-	cd
-	rm /tmp/vagrant-$VERSION/*
-	rmdir /tmp/vagrant-$VERSION
+pushd public_html/dists/any/ > /dev/null
+rm -f Release.new
+echo 'Suite: any' >> Release.new
+echo 'Codename: any' >> Release.new
+echo 'Components: main' >> Release.new
+echo 'Architectures: i386 amd64' >> Release.new
+# TODO Signed-By
+$BASEDIR/build-release-checksums.py main/binary-{amd64,i386}/{Release,Packages{,.gz,.bz2}} >> Release.new
+if ! cmp -s Release Release.new; then
+	echo "Updated Release"
+	mv Release.new Release
+	rm -f InRelease Release.gpg
+	gpg --clearsign -a -s -o InRelease Release
+	gpg -a -b -s -o Release.gpg Release
 fi
+popd > /dev/null
 
 # Export variables for templating
-export VERSION
+export VERSION=$(cat cache/releases.json | jq -r '.vagrant.versions | keys' | jq -r max)
 export NOW=$(date +%F)
-export GPG_KEY
+export GPG_KEY=$(gpg -K --with-colons --with-fingerprint | grep '^fpr:' | cut -d: -f10)
 cat $BASEDIR/index.tpl | envsubst > $BASEDIR/public_html/index.html
