@@ -32,7 +32,7 @@ for program in ['vagrant']:
 		release = releases[program]['versions'][version]
 		build = get_build(release, arch)
 		if build:
-			print releaseinfo.build_control_entry(build, 'control')
+			sys.stdout.write(releaseinfo.build_control_entry(build, 'control'))
 			poolname = "pool/any/main/"+program[0]+"/"+program+"/"+program+"_"+version+"_"+arch+".deb"
 			redirects.write('rewrite ^/'+poolname+' '+build['url']+' permanent;\n')
 			print "Filename:", poolname
