@@ -32,7 +32,6 @@ echo 'Suite: any' >> Release.new
 echo 'Codename: any' >> Release.new
 echo 'Components: main' >> Release.new
 echo 'Architectures: i386 amd64' >> Release.new
-# TODO Signed-By
 $BASEDIR/build-release-checksums.py main/binary-{amd64,i386}/{Release,Packages{,.gz,.bz2}} >> Release.new
 if ! cmp -s Release Release.new; then
 	echo "Updated Release"
