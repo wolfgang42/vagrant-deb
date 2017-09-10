@@ -4,7 +4,7 @@ RUN pip install requests
 RUN apk add --no-cache bash bzip2 curl gettext gnupg gzip jq
 
 WORKDIR /app
-ADD . /app
+COPY . /app
 
 RUN gpg -o hashicorp.key --dearmor hashicorp.gpg
 
