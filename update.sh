@@ -35,10 +35,11 @@ echo 'Codename: any' >> Release.new
 echo 'Components: main' >> Release.new
 echo 'Architectures: i386 amd64' >> Release.new
 $BASEDIR/build-release-checksums.py main/binary-{amd64,i386}/{Release,Packages{,.gz,.bz2}} >> Release.new
-if cmp -s Release Release.new; then
+if cmp -s <(head -n-1 Release) Release.new; then
 	rm Release.new
 else
 	echo "Updated Release"
+	echo 'Date:' $(date -R -u) >> Release.new
 	mv Release.new Release
 	rm -f InRelease Release.gpg
 	gpg --clearsign -a -s -o InRelease Release
