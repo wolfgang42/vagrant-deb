@@ -4,6 +4,10 @@ import subprocess
 import tarfile
 
 def _cache_result(cachename):
+	# A decorator which will permanently cache the results of calling a function.
+	# When used to decorate a function, it should be passed a lambda which takes
+	# the function's arguments and returns a string with the path under which
+	# the result of the function call should be cached.
 	def decorator(getresult):
 		def wrapper(*args):
 			cachefile = 'cache/' + cachename(*args)
@@ -18,6 +22,7 @@ def _cache_result(cachename):
 
 @_cache_result(lambda build: 'size/'+build['filename'])
 def build_size(build):
+	# Get the size (in bytes) of the deb file for a given build.
 	r = requests.head(build['url'])
 	r.raise_for_status()
 	return r.headers['Content-Length']
@@ -61,12 +66,14 @@ def build_control_file(build):
 	return rc.content
 
 def build_control_entry(build, entry):
+	# Obtain the contents of a file from the control.tar.gz of a package.
 	build_control_file(build)
 	with tarfile.open('cache/control/'+build['filename']+'.control.tar.gz', 'r:gz') as tf:
 		return tf.extractfile('./'+entry).read()
 
 @_cache_result(lambda release: 'shasums/'+release['shasums'])
 def release_shasums(release):
+	# Get the SHA256SUMS file for a release.
 	r = requests.get(
 		'https://releases.hashicorp.com/' +
 		release['name'] + '/' +
@@ -78,6 +85,7 @@ def release_shasums(release):
 
 @_cache_result(lambda release: 'shasums/'+release['shasums']+'.sig')
 def release_shasums_sig(release):
+	# Get the SHA256SUMS.sig file for a release
 	r = requests.get(
 		'https://releases.hashicorp.com/' +
 		release['name'] + '/' +
@@ -88,6 +96,8 @@ def release_shasums_sig(release):
 	return r.content
 
 def check_shasums_sig(release):
+	# Get the SHA256SUMS for a release, and verify that they have been properly
+	# signed by the HashiCorp signing key.
 	release_shasums(release)
 	release_shasums_sig(release)
 	# Verify shasums signature
@@ -96,7 +106,7 @@ def check_shasums_sig(release):
 		'/usr/bin/gpg',
 		# Output machine-readable data on stderr
 		'--status-fd', '2',
-		# Use a keyring which only has Hashicorp's key on it
+		# Use a keyring which only has HashiCorp's key on it
 		'--no-default-keyring', '--keyring', '/app/hashicorp.key',
 		# We completely trust all keys on this keyring
 		# (as per above, there's only one anyway)
