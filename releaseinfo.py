@@ -48,13 +48,15 @@ def build_control_file(build):
 	## First file ##
 	assert head[8:24] == 'debian-binary/  ' # File name
 	# head[24:36] (Skip timestamp)
-	assert head[36:56] == '0     0     100644  ' # Owner, group, mode
+	assert head[36:56] == '0     0     100644  ' \
+		or head[36:56] == '0     0     644     ' # Owner, group, mode
 	assert head[56:68] == '4         `\n' # Length: 4 bytes
 	assert head[68:72] == '2.0\n' # Contents of file
 	## Second file ##
 	assert head[72:88] == 'control.tar.gz/ ' # File name
 	# head[88:100] (Skip timestamp)
-	assert head[100:120] == '0     0     100644  ' # Owner, group, mode
+	assert head[100:120] == '0     0     100644  ' \
+		or head[100:120] == '0     0     644     ' # Owner, group, mode
 	control_length = int(head[120:130]) # This is the bit we need
 	assert head[130:132] == '`\n' # End of header record
 	
