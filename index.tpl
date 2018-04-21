@@ -11,6 +11,13 @@
 	You can see the code <a href="https://github.com/wolfgang42/vagrant-deb">on GitHub</a>.
 	For questions/comments/complaints/praise/etc, open an issue there or email me at <a href="mailto:wolfgangmcq+vagrant-deb@gmail.com">wolfgangmcq+vagrant-deb@gmail.com</a>.</p>
 
+	<p>Releases are checked against the
+	<a href="https://www.hashicorp.com/security">HashiCorp security key</a>,
+	and then resigned with my own automatic signing key.
+	(This is necessary because I need to sign the Apt index I generate.)
+	If you need it, here is the PGP public key I use to sign the repository:
+	<a href="/vagrant-deb.asc"><code>vagrant-deb.asc</code></a></p>
+
 <p>The current Vagrant version is <b>${VERSION}</b>; the last check was ${NOW}.</p>
 
 <h2>How do I use it?</h2>

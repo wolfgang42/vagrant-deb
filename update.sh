@@ -52,4 +52,5 @@ popd > /dev/null
 export VERSION=$(cat cache/releases.json | jq -r '.vagrant.versions | keys' | jq -r max)
 export NOW=$(date +%F)
 export GPG_KEY=$(gpg -K --with-colons --with-fingerprint | grep '^fpr:' | cut -d: -f10)
+cp vagrant-deb.asc public_html/
 cat $BASEDIR/index.tpl | envsubst > $BASEDIR/public_html/index.html
