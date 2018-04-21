@@ -3,15 +3,15 @@
 	<title>Unofficial Vagrant Debian Repository</title>
 </head><body>
 <h1>Unofficial Vagrant Debian Repository</h1>
-	
+
 <h2>About</h2>
 	<p>This is an unofficial Debian repository for <a href="http://vagrantup.com/">Vagrant</a>, hosted by <a href="http://www.linestarve.com/">Wolfgang Faust</a>.
-	It provides the Apt index only; the actual Debian packages will be downloaded from the
-	<a href="https://releases.hashicorp.com/vagrant/">HashiCorp releases server</a>.
 	You can see the code <a href="https://github.com/wolfgang42/vagrant-deb">on GitHub</a>.
 	For questions/comments/complaints/praise/etc, open an issue there or email me at <a href="mailto:wolfgangmcq+vagrant-deb@gmail.com">wolfgangmcq+vagrant-deb@gmail.com</a>.</p>
 
-	<p>Releases are checked against the
+	<p>This service provides the Apt index only; the actual Debian packages will be downloaded from the
+	<a href="https://releases.hashicorp.com/vagrant/">HashiCorp releases server</a>.
+	Releases are checked against the
 	<a href="https://www.hashicorp.com/security">HashiCorp security key</a>,
 	and then resigned with my own automatic signing key.
 	(This is necessary because I need to sign the Apt index I generate.)
