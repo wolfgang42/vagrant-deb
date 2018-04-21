@@ -10,8 +10,6 @@
 	<a href="https://releases.hashicorp.com/vagrant/">HashiCorp releases server</a>.
 	You can see the code <a href="https://github.com/wolfgang42/vagrant-deb">on GitHub</a>.
 	For questions/comments/complaints/praise/etc, open an issue there or email me at <a href="mailto:wolfgangmcq+vagrant-deb@gmail.com">wolfgangmcq+vagrant-deb@gmail.com</a>.</p>
-	<p>I've recently updated the way the repository is generated.
-	If you have any problems with it please let me know.</p>
 
 <p>The current Vagrant version is <b>${VERSION}</b>; the last check was ${NOW}.</p>
 
