@@ -24,7 +24,7 @@
 	You'll need to add the repository to your APT sources:
 	<pre>
 	sudo bash -c 'echo deb https://vagrant-deb.linestarve.com/ any main > /etc/apt/sources.list.d/wolfgang42-vagrant.list'
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key ${GPG_KEY}
+	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key ${GPG_KEY}
 	sudo apt-get update
 	</pre>
 	Now install as usual:
