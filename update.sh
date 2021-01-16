@@ -44,6 +44,15 @@ gpg --clearsign -a -s -o InRelease Release
 gpg -a -b -s -o Release.gpg Release
 popd > /dev/null
 
+# Brownouts
+if grep "$(date +%F)" brownouts.txt; then
+	cat << HERE >> public_html/redirects-i386.conf
+location /dists/any {
+	return 503; # Service Unavailable
+}
+HERE
+fi
+
 # Export variables for templating
 export VERSION=$(cat cache/releases.json | jq -r '.vagrant.versions | keys | .[]' | sort --version-sort | tail -n1)
 export NOW=$(date +%F)

@@ -1,3 +1,10 @@
+# Deprecated!
+Use the new [offical repository](https://www.hashicorp.com/blog/announcing-the-hashicorp-linux-repository) instead.
+
+This unofficial repository will be supported until April 30, 2021, after which time the repository will be unavailable.
+
+There will also be periodic brownouts (see `brownouts.txt` for dates) during which attempting `apt-get update` will return 503 Service Unavailable, to give advance notice before the repo goes permanently offline.
+
 # About
 HashiCorp provides Debian packages for Vagrant,
 but they don't provide a repository so you have to download the packages
@@ -21,7 +28,7 @@ This has a number of benefits:
 * Package files will be downloaded directly from HashiCorp, alleviating concerns about tampering.
 * Increased integrity verification: the SHA256 in the `Packages` file comes directly from their API,
   and the signature of the `SHA256SUMS` file is now checked against the
-  [HashiCorp GPG key](https://www.hashicorp.com/security/).)
+  [HashiCorp GPG key](https://www.hashicorp.com/security/).
 
 # Development
 The code is intended to be run in a Docker container.
