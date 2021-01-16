@@ -1,7 +1,7 @@
 FROM python:2.7-alpine
 
 RUN pip install requests
-RUN apk add --no-cache bash bzip2 curl gettext gnupg gzip jq
+RUN apk add --no-cache bash bzip2 coreutils curl gettext gnupg gzip jq
 
 WORKDIR /app
 COPY . /app

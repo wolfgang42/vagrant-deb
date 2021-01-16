@@ -45,7 +45,7 @@ gpg -a -b -s -o Release.gpg Release
 popd > /dev/null
 
 # Export variables for templating
-export VERSION=$(cat cache/releases.json | jq -r '.vagrant.versions | keys' | jq -r max)
+export VERSION=$(cat cache/releases.json | jq -r '.vagrant.versions | keys | .[]' | sort --version-sort | tail -n1)
 export NOW=$(date +%F)
 export GPG_KEY=$(gpg -K --with-colons --with-fingerprint | grep '^fpr:' | cut -d: -f10)
 cp vagrant-deb.asc public_html/
